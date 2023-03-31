@@ -37,17 +37,23 @@
 
    <img src="../img/DCQCN_figure_567.png" width="960px" />   
 
-- 小结：
-  - 优点：类似DCTCP显式反馈流控策略，结合QCN的速率控制，可在PFC触发前缓减流速以避免拥塞，从而减少PFC机制的触发。
-  - 缺点：
-    - 1. 仍然需要依靠PFC来实现无损网络
-    - 2. 与TCTCP一样存在队列延迟的问题
-    - 3. 丢包重传采用Go-back-N机制，虽然简单但是代价较大
 ## Buffer设置
   - DCQCN的前提是要平衡两个因素：
     - 1.PFC不能太早触发，要让ECN先触发以发送拥塞通告
     - 2.PFC不能太晚触发，不能引起缓冲溢出进而丢包
   - 三个关键的阈值：
-    - t-Flight (Headroom Buffer)
-    - t-PFC (PFC阈值): 也就是入队最大能保持的长度
-    - t-ECN (ECN阈值)
+    - t-Flight (Headroom Buffer)：用于存储PAUSE包发送时和生效时到达的数据包的内存大小。每个端口每个优先级所需要的内存空间为22.4KB。
+    - t-PFC (PFC阈值): 也就是触发PFC前ingress队列最大能保持的内存。每个端口每个优先级队列的t-PFC值要小于等于24.47KB。当队列内存占用降低到Tpfc减去两个MTU的值时，会自动发送RESUME恢复发包。
+    - t-ECN (ECN阈值)：触发ECN标记的最小egress队列占用的内存空间。该值的设置一定要使ECN先于PFC触发。最坏情况下，所有的egress queue的包都来自于同一条ingress queue，为保证ECN先于PFC触发，则t-ECN应小于0.85KB，小于一个MTU长度，不可行。这种想法过于静态，由于交换机内缓存资源是共享的，所以t-PFC的设置应取决于剩余的可用资源。如下公式：
+    ```
+    t-PFC = b*(B - 8n*t-Flight - s)/8; 
+    t-ECN < B*(B - 8n*t-Flight) / (8n(b+1));
+    //在我们的实验中，设定b=8, 因此t-ECN < 21.75KB
+    ```
+
+## 总结：
+  - 优点：类似DCTCP显式反馈流控策略，结合QCN的速率控制，可在PFC触发前缓减流速以避免拥塞，从而减少PFC机制的触发。
+  - 缺点：
+    - 1. 仍然需要依靠PFC来实现无损网络
+    - 2. 与TCTCP一样存在队列延迟的问题
+    - 3. 丢包重传采用Go-back-N机制，虽然简单但是代价较大
