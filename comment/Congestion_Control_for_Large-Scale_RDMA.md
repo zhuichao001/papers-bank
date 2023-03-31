@@ -25,7 +25,7 @@
     a = (1-g)*a + g; //如果RP超过时长K(55us) 没有收到CNP，那它就更新a参数: a = (1-g)*a
 ```
 如下图所示：
-<img src="img/DCQCN_figure_567.png" width="760px" />
+![](./img/DCQCN_figure_567.png)
 - 总结：
   - 优点：类似DCTCP显式反馈流控策略，结合QCN的速率控制，可在PFC触发前缓减流速以避免拥塞，从而减少PFC机制的触发。
   - 缺点：
