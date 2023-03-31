@@ -19,7 +19,7 @@
   - 中继端-Congestion Point（拥塞点）：概率性的在数据包上打ECN标记，发送ECN的队列长度阈值要小于PFC的阈值，以尽可能避免PFC，因为后者将彻底暂停上游端口发送报文，概率阈值见图4所示
   - 接收端-Notification Point（通知点）: 当通知点接受到数据包时，它会检查ECN标记，如果50us内没有发送过CNP(拥塞通知分组)，那它会向发送端发送CNP，通知发送者控制流速。
   - 发送端-Reaction Point（反应点）：当流量发送端接收到CNP时，它会按比例减少流量，该比例的计算类似于DCTCP，当接收到CNP时，流控比例增加，当CNP变少时，流控比降低以提升发送速度。公式如下：  
-<img src="../img/DCQCN_figure_567.png" width="960px" />   
+  - <img src="../img/DCQCN_figure_567.png" width="960px" />   
 ```
     Rt = Rc;            //Rt把当前速率作为恢复目标
     Rc = Rc*(1 - a/2);  //限速调整Rc，a是一个加权的限速因子
